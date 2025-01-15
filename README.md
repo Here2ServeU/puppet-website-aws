@@ -73,7 +73,7 @@ sudo mkdir -p /etc/puppetlabs/code/environments/production/modules/webapp/{manif
 
 - Copy the index.html file to the files directory:
 ```bash
-sudo cp ~/path/to/index.html /etc/puppetlabs/code/environments/production/modules/webapp/files/
+sudo cp ~/webapp/index.html /etc/puppetlabs/code/environments/production/modules/webapp/files/
 ```
 
 - Create the init.pp manifest:

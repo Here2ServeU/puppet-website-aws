@@ -2,14 +2,14 @@
 
 ## Project Overview
 
-This hands-on project sets up a Puppet cluster with one controller node and two worker nodes (Amazon Linux and Ubuntu) on AWS. The project includes an HTML form (webapp/index.html) for users to enroll in DevOps and Cloud courses at T2S. The setup process is automated using setup-puppet-cluster.sh, and resources can be cleaned up using destroy-puppet-cluster.sh.
+This hands-on project uses a Puppet cluster with one controller node and two worker nodes (Amazon Linux and Ubuntu) on AWS. The project includes an HTML form (webapp/index.html) for users to enroll in DevOps and Cloud courses at T2S. The setup process is automated using setup-puppet-cluster.sh, and resources can be cleaned up using destroy-puppet-cluster.sh.
 
 ---
 
 ## Steps to Complete the Project
 
 ### 1. Set Up the Puppet Cluster
-- Use the setup-puppet-cluster.sh script to provision the Puppet Controller and two worker nodes (Amazon Linux and Ubuntu) on AWS.
+- Use the **setup-puppet-cluster.sh** script to provision the Puppet Controller and two worker nodes (Amazon Linux and Ubuntu) on AWS.
 - The script creates the necessary security group, PEM key, and EC2 instances.
 
 ### 2. Configure Puppet Master on the Controller Node
@@ -121,7 +121,7 @@ http://<controller-public-ip>/index.html
 - The enrollment form should be displayed.
 
 ### 7. Clean Up the Cluster
-- Use the destroy-puppet-cluster.sh script to terminate the Puppet Controller and worker nodes, delete the security group, and remove the PEM key.
+- Use the **destroy-puppet-cluster.sh** script to terminate the Puppet Controller and worker nodes, delete the security group, and remove the PEM key.
 
 ---
 

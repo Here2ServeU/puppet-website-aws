@@ -20,22 +20,35 @@ ssh -i ~/.ssh/puppet-controller-key.pem ubuntu@<controller-public-ip>
 
 #### Install Puppet Server:
 ```bash
+sudo apt update && sudo apt upgrade -y
+curl -O https://apt.puppet.com/puppet7-release-$(lsb_release -cs).deb
+sudo dpkg -i puppet7-release-$(lsb_release -cs).deb
 sudo apt update
 sudo apt install -y puppetserver
-sudo systemctl start puppetserver
-sudo systemctl enable puppetserver
 ```
 
 #### Edit the Puppet configuration file /etc/puppetlabs/puppet/puppet.conf:
 ```bash
+sudo mkdir -p /etc/puppetlabs/puppet
 sudo nano /etc/puppetlabs/puppet/puppet.conf
 ```
 - Add the following under [main]:
 ```rb
+[main]
 certname = puppet-controller
 server = puppet-controller
 environment = production
+runinterval = 30m
 ```
+sudo systemctl restart puppetserver
+sudo systemctl status puppetserver
+
+sudo nano /etc/hosts
+Add this entry to the /etc/hosts:
+```txt
+34.229.245.67 puppet-controller
+```
+
 ### 3. Install Puppet Agent on Worker Nodes
 - SSH into each worker node:
 ```bash
@@ -73,6 +86,8 @@ sudo mkdir -p /etc/puppetlabs/code/environments/production/modules/webapp/{manif
 
 - Copy the index.html file to the files directory:
 ```bash
+mkdir webapp
+nano webapp/index.html # Add the desired html content
 sudo cp ~/webapp/index.html /etc/puppetlabs/code/environments/production/modules/webapp/files/
 ```
 
@@ -97,6 +112,7 @@ class webapp {
 ### 5. Apply the Puppet Configuration
 - Add the webapp class to the Puppet Controller node:
 ```
+sudo mkdir /etc/puppetlabs/code/environments/production/manifests
 sudo nano /etc/puppetlabs/code/environments/production/manifests/site.pp
 ```
 
@@ -110,6 +126,49 @@ node 'puppet-controller' {
 - Run the Puppet agent on the Puppet Controller to apply the manifest:
 ```bash
 sudo puppet agent --test
+```
+
+### 6. Configure Nodes
+```bash
+ssh -i ~/.ssh/your-key.pem ubuntu@<ubuntu-node-ip>
+
+# Add Puppet APT repository
+curl -O https://apt.puppet.com/puppet7-release-$(lsb_release -cs).deb
+sudo dpkg -i puppet7-release-$(lsb_release -cs).deb
+sudo apt update
+
+# Install Puppet agent
+sudo apt install -y puppet-agent
+/opt/puppetlabs/bin/puppet --version  # To verify
+```
+
+#### Configure Pupupet Agent
+```bash
+sudo nano /etc/puppetlabs/puppet/puppet.conf
+```
+
+- Add or modify the following under the [main] section
+```text
+server = <puppet-controller-ip>
+certname = <node-hostname>
+environment = production
+```
+- Save and exit
+
+- Start and enable the Puppet Agent
+```bash
+sudo /opt/puppetlabs/bin/puppet resource service puppet ensure=running enable=true
+```
+
+- Sign the Agent Certificate on the Puppet Controller
+```bash
+sudo /opt/puppetlabs/bin/puppetserver ca sign --certname <node-hostname>
+```
+
+- Verify Puppet Agent communication
+```bash
+sudo /opt/puppetlabs/bin/puppet agent --test # On Nodes
+sudo tail -f /var/log/puppetlabs/puppetserver/puppetserver.log # On Controller
 ```
 
 ### 6. Verify the Deployment

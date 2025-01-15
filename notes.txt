@@ -1,0 +1,10 @@
+|      DescribeInstances     |
++----------------------------+
+|  worker-node-ubuntu        |
+|  54.226.1.197              |
+|  puppet-controller         |
+|  34.229.245.67             |
+|  worker-node-amazon-linux  |
+|  54.175.156.6            
+
+http://54.175.156.6/index.html

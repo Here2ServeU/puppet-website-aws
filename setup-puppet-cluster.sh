@@ -30,7 +30,7 @@ fi
 
 echo "Security Group ID: $SECURITY_GROUP_ID"
 
-# Add rules to Security Group
+# Add rules to Security Group: SSH, HTTP and Puppet
 echo "Adding rules to Security Group..."
 aws ec2 authorize-security-group-ingress \
   --group-id $SECURITY_GROUP_ID \
@@ -43,6 +43,13 @@ aws ec2 authorize-security-group-ingress \
   --group-id $SECURITY_GROUP_ID \
   --protocol tcp \
   --port 80 \
+  --cidr 0.0.0.0/0 \
+  --region $AWS_REGION
+
+aws ec2 authorize-security-group-ingress \
+  --group-id $SECURITY_GROUP_ID \
+  --protocol tcp \
+  --port 8140 \
   --cidr 0.0.0.0/0 \
   --region $AWS_REGION
 

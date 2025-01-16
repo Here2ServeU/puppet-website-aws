@@ -5,8 +5,8 @@ AWS_REGION="us-east-1"
 SECURITY_GROUP_NAME="puppet-cluster-sg"
 PEM_KEY_NAME="puppet-controller-key"
 CONTROLLER_NAME="puppet-server"
-WORKER1_NAME="puppet-agent-amazon"
-WORKER2_NAME="puppet-agent-ubuntu"
+WORKER1_NAME="puppet-agent-1"
+WORKER2_NAME="puppet-agent-2"
 
 # Function to get instance IDs by Name tag
 get_instance_ids_by_name() {

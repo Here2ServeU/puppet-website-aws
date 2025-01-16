@@ -6,7 +6,7 @@
 ### 1.	Launch EC2 Instances:
 - Puppet Server: Ubuntu 22.04
 - Puppet Agent 1: Ubuntu 22.04
-- Puppet Agent 2: Amazon Linux 2
+- Puppet Agent 2: Ubuntu 22.04
 
 ### 2.	Security Group Rules:
 - Allow inbound SSH (port 22).
@@ -81,7 +81,7 @@ sudo nano /etc/puppetlabs/puppet/puppet.conf
 ```rb
 [main]
 server = puppet-server
-certname = puppet-agent-ubuntu
+certname = puppet-agent-1
 environment = production
 runinterval = 1h
 ```
@@ -91,34 +91,10 @@ sudo systemctl start puppet
 sudo systemctl enable puppet
 sudo systemctl status puppet
 ```
-### For Amazon Linux Node
-#### 1.	Add Repository and Install Puppet Agent
-```bash
-sudo yum install -y https://yum.puppet.com/puppet-release-el-7.noarch.rpm
-sudo yum install -y puppet-agent
-```
-#### 2.	Configure Puppet Agent
-- Edit the configuration:
-```bash
-sudo nano /etc/puppetlabs/puppet/puppet.conf
-```
-- Add:
-```rb
-[main]
-server = puppet-server
-certname = puppet-agent-amazon
-environment = production
-runinterval = 1h
-```
-#### 3.	Start Puppet Agent
-```bash
-sudo systemctl start puppet
-sudo systemctl enable puppet
-sudo systemctl status puppet
-```
+
 ## Step 4: Configure /etc/hosts and /etc/hostname
 
-### On Both Nodes and Puppet Server:
+### On Both Worker Nodes and Puppet Server:
 #### 1.	Edit /etc/hosts:
 ```bash
 sudo nano /etc/hosts
@@ -126,8 +102,8 @@ sudo nano /etc/hosts
 - Add entries:
 ```txt
 <puppet-server-ip> puppet puppet-server
-<ubuntu-agent-ip> puppet-agent-ubuntu
-<amazon-agent-ip> puppet-agent-amazon
+<ubuntu-agent-ip> puppet-agent-1
+<amazon-agent-ip> puppet-agent-2
 ```
 #### 2.	Update /etc/hostname:
 ```bash
@@ -135,8 +111,8 @@ sudo nano /etc/hostname
 ```
 ##### Set:
 - On Puppet Server: puppet-server
-- On Ubuntu Node: puppet-agent-ubuntu
-- On Amazon Linux Node: puppet-agent-amazon
+- On First Worker Node: puppet-agent-1
+- On Second Worker Node: puppet-agent-2
 
 - Apply changes:
 ```bash
@@ -154,8 +130,8 @@ sudo /opt/puppetlabs/bin/puppet agent --test
 #### 1.	List and Sign Certificates:
 ```bash
 sudo /opt/puppetlabs/bin/puppetserver ca list
-sudo /opt/puppetlabs/bin/puppetserver ca sign --certname puppet-agent-ubuntu
-sudo /opt/puppetlabs/bin/puppetserver ca sign --certname puppet-agent-amazon
+sudo /opt/puppetlabs/bin/puppetserver ca sign --certname puppet-agent-1
+sudo /opt/puppetlabs/bin/puppetserver ca sign --certname puppet-agent-2
 ```
 #### 2.	Re-run Agent to Apply Configurations:
 ```bash

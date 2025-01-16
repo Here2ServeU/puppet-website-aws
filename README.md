@@ -1,166 +1,184 @@
-Here’s a step-by-step guide to set up Puppet Server and Puppet Agent on Ubuntu EC2 instances, configure the necessary files, and deploy a website using Puppet.
+# Comprehensive Guide to Set Up Puppet Server, Agents (Ubuntu & Amazon Linux), and Deploy a Website Using Puppet Automation
 
----
+
 ## Step 1: Prerequisites
-1.	Launch two EC2 instances:
-	•	Puppet Server: Ubuntu 22.04
-	•	Puppet Agent: Ubuntu 22.04
 
-2.	Ensure Security Group Rules:
-	•	Allow inbound SSH (port 22).
-  •	Allow inbound HTTP (port 80).
-	•	Allow inbound Puppet traffic (port 8140).
+### 1.	Launch EC2 Instances:
+- Puppet Server: Ubuntu 22.04
+- Puppet Agent 1: Ubuntu 22.04
+- Puppet Agent 2: Amazon Linux 2
+
+### 2.	Security Group Rules:
+- Allow inbound SSH (port 22).
+- Allow inbound HTTP (port 80).
+- Allow inbound Puppet traffic (port 8140).
+
+**Note**: For this, we use the ***setup-puppet-cluster.sh*** file to automate step 1.
 
 ## Step 2: Install Puppet Server on the Controller Node
 
-### 1. Update and install prerequisites
-
+### 1. Update System and Install Prerequisites
+```bash
 sudo apt update && sudo apt upgrade -y
 sudo apt install wget -y
-
-2. Add Puppet repository
-
+```
+### 2. Add Puppet Repository
+```bash
 wget https://apt.puppet.com/puppet8-release-jammy.deb
 sudo dpkg -i puppet8-release-jammy.deb
 sudo apt update
-
-3. Install Puppet Server
-
+```
+### 3. Install Puppet Server
+```bash
 sudo apt install -y puppetserver
+```
+### 4. Configure Puppet Server
 
-4. Configure Puppet Server
-
-Edit the Puppet Server configuration file:
-
+- Edit the configuration:
+```bash
 sudo nano /etc/puppetlabs/puppet/puppet.conf
-
-Add or modify the following under [main]:
-
+```
+- Add:
+```rb
 [main]
 certname = puppet-server
 dns_alt_names = puppet,puppet-server
 environment = production
 runinterval = 1h
+```
+### 5. Set Java Heap Memory
 
-5. Set up Java memory allocation
-
-Update the Java heap size for better performance:
-
+- Edit Java memory settings:
+```bash
 sudo nano /etc/default/puppetserver
-
-Set:
-
+```
+- Set:
+```rb
 JAVA_ARGS="-Xms512m -Xmx512m"
-
-6. Start and enable Puppet Server
-
+```
+### 6. Start Puppet Server
+```bash
 sudo systemctl start puppetserver
 sudo systemctl enable puppetserver
 sudo systemctl status puppetserver
-
-Step 3: Install Puppet Agent on the Client Node
-
-1. Update and install prerequisites
-
+```
+## Step 3: Install Puppet Agent on Client Nodes
+### For Ubuntu Node
+#### 1.	Update System and Add Repository
+```bash
 sudo apt update && sudo apt upgrade -y
-sudo apt install wget -y
-
-2. Add Puppet repository
-
 wget https://apt.puppet.com/puppet8-release-jammy.deb
 sudo dpkg -i puppet8-release-jammy.deb
 sudo apt update
-
-3. Install Puppet Agent
-
 sudo apt install -y puppet-agent
-
-4. Configure Puppet Agent
-
-Edit the Puppet Agent configuration file:
-
+```
+#### 2.	Configure Puppet Agent
+- Edit the configuration:
+```bash
 sudo nano /etc/puppetlabs/puppet/puppet.conf
-
-Add or modify the following under [main]:
-
+```
+- Add:
+```rb
 [main]
 server = puppet-server
-certname = puppet-agent
+certname = puppet-agent-ubuntu
 environment = production
 runinterval = 1h
-
-5. Start and enable Puppet Agent
-
+```
+#### 3.	Start Puppet Agent
+```bash
 sudo systemctl start puppet
 sudo systemctl enable puppet
 sudo systemctl status puppet
+```
+### For Amazon Linux Node
+#### 1.	Add Repository and Install Puppet Agent
+```bash
+sudo yum install -y https://yum.puppet.com/puppet-release-el-7.noarch.rpm
+sudo yum install -y puppet-agent
+```
+#### 2.	Configure Puppet Agent
+- Edit the configuration:
+```bash
+sudo nano /etc/puppetlabs/puppet/puppet.conf
+```
+- Add:
+```rb
+[main]
+server = puppet-server
+certname = puppet-agent-amazon
+environment = production
+runinterval = 1h
+```
+#### 3.	Start Puppet Agent
+```bash
+sudo systemctl start puppet
+sudo systemctl enable puppet
+sudo systemctl status puppet
+```
+## Step 4: Configure /etc/hosts and /etc/hostname
 
-Step 4: Configure /etc/hosts and /etc/hostname
-
-On Both Nodes:
-
-Edit /etc/hosts:
-
+### On Both Nodes and Puppet Server:
+#### 1.	Edit /etc/hosts:
+```bash
 sudo nano /etc/hosts
-
-Add entries for both the Puppet Server and Agent:
-
-98.82.188.197 puppet puppet-server
-98.84.99.140 puppet-agent
-
-Update /etc/hostname:
-
+```
+- Add entries:
+```txt
+<puppet-server-ip> puppet puppet-server
+<ubuntu-agent-ip> puppet-agent-ubuntu
+<amazon-agent-ip> puppet-agent-amazon
+```
+#### 2.	Update /etc/hostname:
+```bash
 sudo nano /etc/hostname
+```
+##### Set:
+- On Puppet Server: puppet-server
+- On Ubuntu Node: puppet-agent-ubuntu
+- On Amazon Linux Node: puppet-agent-amazon
 
-Set the hostname to match the certname in the Puppet configuration:
-	•	On Puppet Server: puppet-server
-	•	On Puppet Agent: puppet-agent
-
-Apply changes:
-
+- Apply changes:
+```bash
 sudo hostnamectl set-hostname <hostname>
+```
+## Step 5: Establish Connection Between Puppet Server and Agents
 
-Step 5: Establish Connection Between Server and Agent
+### On Puppet Agents:
 
-1. Test Puppet Agent
-
-On the agent, request a certificate:
-
+- Request a certificate:
+```bash
 sudo /opt/puppetlabs/bin/puppet agent --test
-
-2. Sign the certificate on the Puppet Server
-
-On the server:
-
+```
+### On Puppet Server:
+#### 1.	List and Sign Certificates:
+```bash
 sudo /opt/puppetlabs/bin/puppetserver ca list
-sudo /opt/puppetlabs/bin/puppetserver ca sign --certname puppet-agent
-
-3. Re-run the agent to apply configurations
-
-On the agent:
-
+sudo /opt/puppetlabs/bin/puppetserver ca sign --certname puppet-agent-ubuntu
+sudo /opt/puppetlabs/bin/puppetserver ca sign --certname puppet-agent-amazon
+```
+#### 2.	Re-run Agent to Apply Configurations:
+```bash
 sudo /opt/puppetlabs/bin/puppet agent --test
+```
+## Step 6: Deploy Website Using Puppet
 
-Step 6: Create Manifest to Install Nginx and Deploy the Website
-
-1. Create directories for Puppet manifest and files
-
-On the Puppet Server:
-
+### 1. Create Puppet Module Directory
+```bash
 sudo mkdir -p /etc/puppetlabs/code/environments/production/modules/webapp/{manifests,files}
-
-2. Copy index.html to the module files directory
-
+```
+### 2. Copy index.html
+```bash
 sudo cp webdata/index.html /etc/puppetlabs/code/environments/production/modules/webapp/files/
+```
+### 3. Create init.pp Manifest
 
-3. Create the init.pp file
-
-Edit the manifest file:
-
+- Edit:
+```bash
 sudo nano /etc/puppetlabs/code/environments/production/modules/webapp/manifests/init.pp
-
-Add the following content:
-
+```
+- Add:
+```rb
 class webapp {
   package { 'nginx':
     ensure => installed,
@@ -177,32 +195,41 @@ class webapp {
     require => Package['nginx'],
   }
 }
+```
+### 4. Update site.pp
 
-4. Update site.pp
-
-Edit the site-wide manifest:
-
+- Edit:
+```bash
 sudo nano /etc/puppetlabs/code/environments/production/manifests/site.pp
-
-Add the following:
-
-node 'puppet-agent' {
+```
+- Add:
+```rb
+node 'puppet-agent-ubuntu' {
   include webapp
 }
 
-Step 7: Apply the Manifest
+node 'puppet-agent-amazon' {
+  include webapp
+}
+```
 
-On the Puppet Agent:
-
+## Step 7: Apply Manifest and Verify
+### 1.	Run Puppet Agent:
+```bash
 sudo /opt/puppetlabs/bin/puppet agent --test
+```
+### 2.	Verify Website:
+#### Open a browser and navigate to:
+- ***http://<ubuntu-agent-ip>***
+- ***http://<amazon-agent-ip>***
+- You should see the form for students to register for DevOps, Cloud, or Generative AI courses.
 
-This will:
-	1.	Install Nginx on the agent node.
-	2.	Copy the index.html file to /var/www/html/ directory.
-	3.	Start and enable the Nginx service.
+---
 
-Step 8: Verify the Website
-	1.	Open a web browser and visit http://<puppet-agent-ip>.
-	2.	You should see the form where potential students can register for DevOps, Cloud, or Generative AI courses.
+## Clean Up
+- Use the **destroy-puppet-cluster.sh** file to do it. 
+```bash
+./destroy-puppet-cluster.sh
+```
 
-This setup ensures the Puppet Server and Agent are correctly configured, and the website is deployed seamlessly using Puppet automation.
+This guide sets up the Puppet Server and agents, configures connectivity and automates website deployment on multiple nodes. Let me know if you need further assistance!

@@ -196,8 +196,8 @@ sudo /opt/puppetlabs/bin/puppet agent --test
 ```
 ### 2.	Verify Website:
 #### Open a browser and navigate to:
-- ***http://<ubuntu-agent-ip>***
-- ***http://<amazon-agent-ip>***
+- ***http://<ubuntu-agent-1-ip>***
+- ***http://<ubuntu-agent-2-ip>***
 - You should see the form for students to register for DevOps, Cloud, or Generative AI courses.
 
 ---

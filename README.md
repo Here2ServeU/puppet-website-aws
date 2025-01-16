@@ -180,11 +180,11 @@ sudo nano /etc/puppetlabs/code/environments/production/manifests/site.pp
 ```
 - Add:
 ```rb
-node 'puppet-agent-ubuntu' {
+node 'puppet-agent-1' {
   include webapp
 }
 
-node 'puppet-agent-amazon' {
+node 'puppet-agent-2' {
   include webapp
 }
 ```

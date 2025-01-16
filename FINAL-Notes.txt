@@ -1,19 +1,17 @@
 Here’s a step-by-step guide to set up Puppet Server and Puppet Agent on Ubuntu EC2 instances, configure the necessary files, and deploy a website using Puppet.
 
----
-## Step 1: Prerequisites
-1.	Launch two EC2 instances:
+Step 1: Prerequisites
+	1.	Launch two EC2 instances:
 	•	Puppet Server: Ubuntu 22.04
 	•	Puppet Agent: Ubuntu 22.04
-
-2.	Ensure Security Group Rules:
+	2.	Ensure Security Group Rules:
 	•	Allow inbound SSH (port 22).
-  •	Allow inbound HTTP (port 80).
+    •	Allow inbound HTTP (port 80).
 	•	Allow inbound Puppet traffic (port 8140).
 
-## Step 2: Install Puppet Server on the Controller Node
+Step 2: Install Puppet Server on the Controller Node
 
-### 1. Update and install prerequisites
+1. Update and install prerequisites
 
 sudo apt update && sudo apt upgrade -y
 sudo apt install wget -y

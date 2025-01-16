@@ -4,9 +4,9 @@
 AWS_REGION="us-east-1"
 SECURITY_GROUP_NAME="puppet-cluster-sg"
 PEM_KEY_NAME="puppet-controller-key"
-CONTROLLER_NAME="puppet-controller"
-WORKER1_NAME="worker-node-amazon-linux"
-WORKER2_NAME="worker-node-ubuntu"
+CONTROLLER_NAME="puppet-server"
+WORKER1_NAME="puppet-agent-amazon"
+WORKER2_NAME="puppet-agent-ubuntu"
 CONTROLLER_AMI="ami-0e2c8caa4b6378d8c" # Ubuntu AMI
 WORKER1_AMI="ami-01816d07b1128cd2d"   # Amazon Linux AMI
 WORKER2_AMI="ami-0e2c8caa4b6378d8c"   # Ubuntu AMI

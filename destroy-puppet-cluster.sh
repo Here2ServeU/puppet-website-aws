@@ -34,6 +34,10 @@ CONTROLLER_INSTANCE_ID=$(get_instance_ids_by_name $CONTROLLER_NAME)
 WORKER1_INSTANCE_ID=$(get_instance_ids_by_name $WORKER1_NAME)
 WORKER2_INSTANCE_ID=$(get_instance_ids_by_name $WORKER2_NAME)
 
+echo "Controller Instance ID: $CONTROLLER_INSTANCE_ID"
+echo "Worker1 Instance ID: $WORKER1_INSTANCE_ID"
+echo "Worker2 Instance ID: $WORKER2_INSTANCE_ID"
+
 if [ -n "$CONTROLLER_INSTANCE_ID" ] || [ -n "$WORKER1_INSTANCE_ID" ] || [ -n "$WORKER2_INSTANCE_ID" ]; then
   aws ec2 terminate-instances \
     --instance-ids $CONTROLLER_INSTANCE_ID $WORKER1_INSTANCE_ID $WORKER2_INSTANCE_ID \
@@ -43,14 +47,35 @@ else
   echo "No running instances found."
 fi
 
+# Wait for termination
+echo "Waiting for instances to terminate..."
+if [ -n "$CONTROLLER_INSTANCE_ID" ] || [ -n "$WORKER1_INSTANCE_ID" ] || [ -n "$WORKER2_INSTANCE_ID" ]; then
+  aws ec2 wait instance-terminated \
+    --instance-ids $CONTROLLER_INSTANCE_ID $WORKER1_INSTANCE_ID $WORKER2_INSTANCE_ID \
+    --region $AWS_REGION
+  echo "Instances terminated successfully."
+else
+  echo "No instances to wait for."
+fi
+
 # Delete Security Group
 echo "Deleting Security Group..."
 SECURITY_GROUP_ID=$(get_security_group_id $SECURITY_GROUP_NAME)
 if [ -n "$SECURITY_GROUP_ID" ]; then
   aws ec2 delete-security-group --group-id $SECURITY_GROUP_ID --region $AWS_REGION
   echo "Security Group deleted."
+else
+  echo "Security Group not found."
 fi
 
 # Delete PEM Key Pair
 echo "Deleting PEM Key Pair..."
 aws ec2 delete-key-pair --key-name $PEM_KEY_NAME --region $AWS_REGION
+if [ -f "$PEM_KEY_NAME.pem" ]; then
+  rm -f "$PEM_KEY_NAME.pem"
+  echo "Local PEM file deleted."
+else
+  echo "Local PEM file not found."
+fi
+
+echo "Cleanup completed!"
